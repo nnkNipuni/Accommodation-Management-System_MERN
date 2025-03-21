@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+
 import Home from './pages/boardingSeeker/Home.jsx'; // Import Home
 import SearchAdd from './pages/boardingSeeker/searchAdd.jsx'; // Import SearchAdd
 
