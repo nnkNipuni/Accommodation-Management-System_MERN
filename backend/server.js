@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import { connectDB } from "./src/config/database.js";
 import advertisementRoutes from "./src/routes/advertisement.route.js";
+import userRoutes from "./src/routes/userRoutes.js";
 
 // Load environment variables from a .env file
 dotenv.config();
@@ -19,6 +20,8 @@ app.get("/Accmmodation_System", (req, res) => {
 
 // API Routes
 app.use("/api/advertisements", advertisementRoutes);
+//API user routes
+app.use("/api/users", userRoutes);
 
 console.log(process.env.MONGO_URI);
 
