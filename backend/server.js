@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors"; 
 import { connectDB } from "./src/config/database.js";
 import advertisementRoutes from "./src/routes/advertisement.route.js";
 import userRoutes from "./src/routes/userRoutes.js";
@@ -8,6 +9,7 @@ import userRoutes from "./src/routes/userRoutes.js";
 dotenv.config();
 // Initialize Express application
 const app   = express();
+app.use(cors({ origin: "http://localhost:5173" })); // Adjust if needed
 
 // Middleware
 app.use(express.json()); // For parsing application/json

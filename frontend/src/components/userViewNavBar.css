@@ -1,0 +1,177 @@
+.navbar {
+  background: #1a1a2e;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 80px;
+  max-width: 1500px;
+  padding: 0 24px;
+}
+
+.navbar-logo {
+  color: #fff;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  text-align: center;
+  margin-right: 24px;
+}
+
+.nav-item {
+  height: 80px;
+  display: flex;
+  align-items: center;
+}
+
+.nav-links {
+  color: #fff;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  height: 100%;
+}
+
+.nav-links:hover {
+  border-bottom: 4px solid #4361ee;
+  transition: all 0.2s ease-out;
+}
+
+.menu-icon {
+  display: none;
+}
+
+.auth-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.login-button, .register-button {
+  text-decoration: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  margin-left: 10px;
+  font-weight: 600;
+}
+
+.login-button {
+  color: #fff;
+  background-color: transparent;
+  border: 1px solid #fff;
+}
+
+.register-button {
+  background-color: #4361ee;
+  color: #fff;
+  border: none;
+}
+
+.login-button:hover {
+  background-color: #fff;
+  color: #1a1a2e;
+  transition: all 0.3s ease-out;
+}
+
+.register-button:hover {
+  background-color: #3f37c9;
+  transition: all 0.3s ease-out;
+}
+
+@media screen and (max-width: 960px) {
+  .nav-menu {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 90vh;
+    position: absolute;
+    top: 80px;
+    left: -100%;
+    opacity: 1;
+    transition: all 0.5s ease;
+  }
+
+  .nav-menu.active {
+    background: #1a1a2e;
+    left: 0;
+    opacity: 1;
+    transition: all 0.5s ease;
+    z-index: 1;
+  }
+
+  .nav-item {
+    height: auto;
+    padding: 20px 0;
+  }
+
+  .nav-links {
+    text-align: center;
+    padding: 2rem;
+    width: 100%;
+    display: table;
+  }
+
+  .nav-links:hover {
+    background-color: #4361ee;
+    border-radius: 0;
+    border-bottom: none;
+  }
+
+  .navbar-logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(25%, 50%);
+  }
+
+  .menu-icon {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(-100%, 60%);
+    font-size: 1.8rem;
+    cursor: pointer;
+  }
+
+  .auth-buttons {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 80px;
+    right: -100%;
+    width: 100%;
+    height: auto;
+    transition: all 0.5s ease;
+  }
+
+  .auth-buttons.active {
+    right: 0;
+    transition: all 0.5s ease;
+  }
+
+  .login-button, .register-button {
+    width: 100%;
+    text-align: center;
+    margin: 10px 0;
+  }
+}

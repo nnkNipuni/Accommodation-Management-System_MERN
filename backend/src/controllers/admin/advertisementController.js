@@ -3,10 +3,10 @@ import Advertisement from '../../models/advertisement.model.js';
 // Create a new advertisement
 export const createAdvertisement = async (req, res) => {
   try {
-    const { Adtitle, description, facilities, price, image, category } = req.body;
+    const { Adtitle, description, facilities, price, image, AccommodationType } = req.body;
     
     // Validate required fields
-    if (!Adtitle || !description || !facilities || !price || !image || !category) {
+    if (!Adtitle || !description || !facilities || !price || !image || !AccommodationType) {
       return res.status(400).json({ message: 'All fields are required' });
     }
     
@@ -16,7 +16,7 @@ export const createAdvertisement = async (req, res) => {
       facilities,
       price,
       image,
-      category
+      AccommodationType
     });
     
     const savedAdvertisement = await newAdvertisement.save();
@@ -93,9 +93,9 @@ export const deleteAdvertisement = async (req, res) => {
 // Get advertisements by category
 export const getAdvertisementsByCategory = async (req, res) => {
   try {
-    const { category } = req.params;
+    const { AccommodationType } = req.params;
     
-    const advertisements = await Advertisement.find({ category }).sort({ createdAt: -1 });
+    const advertisements = await Advertisement.find({ AccommodationType }).sort({ createdAt: -1 });
     
     res.status(200).json(advertisements);
   } catch (error) {
@@ -104,25 +104,47 @@ export const getAdvertisementsByCategory = async (req, res) => {
 };
 
 // Search advertisements
+// 
+
+// Enhanced search advertisements function
 export const searchAdvertisements = async (req, res) => {
   try {
-    const { query } = req.query;
+    const { query, minPrice, maxPrice, type, facilities } = req.query;
     
-    if (!query) {
-      return res.status(400).json({ message: 'Search query is required' });
-    }
+    let searchCriteria = {};
     
-    const advertisements = await Advertisement.find({
-      $or: [
+    // Text search
+    if (query) {
+      searchCriteria.$or = [
         { Adtitle: { $regex: query, $options: 'i' } },
         { description: { $regex: query, $options: 'i' } },
-        { facilities: { $regex: query, $options: 'i' } },
-        { category: { $regex: query, $options: 'i' } }
-      ]
-    }).sort({ createdAt: -1 });
+        { AccommodationType: { $regex: query, $options: 'i' } }
+      ];
+    }
+    
+    // Price range
+    if (minPrice || maxPrice) {
+      searchCriteria.price = {};
+      if (minPrice) searchCriteria.price.$gte = Number(minPrice);
+      if (maxPrice) searchCriteria.price.$lte = Number(maxPrice);
+    }
+    
+    // Accommodation type
+    if (type) {
+      searchCriteria.AccommodationType = type;
+    }
+    
+    // Facilities
+    if (facilities) {
+      const facilitiesArray = facilities.split(',');
+      searchCriteria.facilities = { $all: facilitiesArray };
+    }
+    
+    const advertisements = await Advertisement.find(searchCriteria).sort({ createdAt: -1 });
     
     res.status(200).json(advertisements);
   } catch (error) {
     res.status(500).json({ message: 'Error searching advertisements', error: error.message });
   }
+
 };

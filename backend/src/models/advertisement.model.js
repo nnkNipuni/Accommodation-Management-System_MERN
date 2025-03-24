@@ -12,7 +12,7 @@ const advertisementSchema = new mongoose.Schema({
         trim: true,
     },
     facilities:{
-        type: String,
+        type: [String],
         required: true,
         trim: true,
     },
@@ -22,10 +22,10 @@ const advertisementSchema = new mongoose.Schema({
         required: true,
     },
     image: {
-        type: String,
+        type: [String],
         required: true,
     },
-    category: {
+    AccommodationType: {
         type: String,
         required: true,
     },

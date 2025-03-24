@@ -21,7 +21,7 @@ router.get('/', getAllAdvertisements);
 router.get('/search', searchAdvertisements);
 
 // Get advertisements by category
-router.get('/category/:category', getAdvertisementsByCategory);
+router.get('/type/:AccommodationType', getAdvertisementsByCategory);
 
 // Get, update, delete a specific advertisement by ID
 router.get('/:id', getAdvertisementById);
