@@ -4,6 +4,7 @@ import cors from "cors";
 import { connectDB } from "./src/config/database.js";
 import advertisementRoutes from "./src/routes/advertisement.route.js";
 import userRoutes from "./src/routes/userRoutes.js";
+import reviewRoutes from "./src/routes/review.routes.js";
 
 // Load environment variables from a .env file
 dotenv.config();
@@ -24,6 +25,7 @@ app.get("/Accmmodation_System", (req, res) => {
 app.use("/api/advertisements", advertisementRoutes);
 //API user routes
 app.use("/api/users", userRoutes);
+app.use("/api/reviews", reviewRoutes );
 
 console.log(process.env.MONGO_URI);
 

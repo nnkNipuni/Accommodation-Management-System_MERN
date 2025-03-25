@@ -4,6 +4,7 @@ import "./index.css";
 import Home from './pages/boardingSeeker/Home.jsx'; // Import Home
 import SearchAdd from './pages/boardingSeeker/searchAdd.jsx'; // Import SearchAdd
 import UserviewNavBar from './components/user.viewNavBar.jsx';
+import BoardingDetails from './components/boardingDetails.jsx';
 //Import other pages as needed
 // Layout component that includes the navbar
 
@@ -24,6 +25,7 @@ const App = () => {
                 <Routes>
                     <Route path="/" element={ <Layout> <Home /> </Layout> } /> {/* Home at root */}
                     <Route path="/searchadd" element={<Layout> <SearchAdd /></Layout>} /> {/* SearchAdd at /searchadd */}
+                    <Route path="/advertisement/:id" element={<Layout> <BoardingDetails /> </Layout>} /> {/* BoardingDetails at /boarding/:id */}
                 </Routes>
             </div>
         </Router>
