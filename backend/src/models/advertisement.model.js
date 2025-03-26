@@ -47,8 +47,6 @@ const advertisementSchema = new mongoose.Schema({
     description: { type: String, required: true },
     price: { type: Number, required: true },
     facilities: { type: [String], required: true },
-    reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }], // Ensure this field exists
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } 
   });
 const Advertisement = mongoose.model("Advertisement", advertisementSchema);
 export default Advertisement;

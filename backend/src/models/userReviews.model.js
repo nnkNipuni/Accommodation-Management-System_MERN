@@ -6,7 +6,11 @@ const reviewSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   advertisement: { type: mongoose.Schema.Types.ObjectId, ref: "Advertisement", required: true }, // Make sure this references Advertisement
   createdAt: { type: Date, default: Date.now },
-});
+}, {
+    // Add this to allow population
+    strictPopulate: false
+  });
+  
 
 const Review = mongoose.model("Review", reviewSchema);
 export default Review;
