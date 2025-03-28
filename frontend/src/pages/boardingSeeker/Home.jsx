@@ -1,6 +1,5 @@
 // backend/src/pages/boarding seeker/home.jsx
 import React from 'react';
-import UserViewNavBar from '..//../components/uerViewNavBar.jsx';
 
 const Home = () => {
     return (

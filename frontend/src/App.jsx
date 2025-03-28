@@ -1,14 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import "./index.css";
-import Home from './pages/boardingSeeker/Home.jsx'; // Import Home
-import SearchAdd from './pages/boardingSeeker/searchAdd.jsx'; // Import SearchAdd
+import Home from './pages/boardingSeeker/Home.jsx'; 
+import SearchAdd from './pages/boardingSeeker/searchAdd.jsx'; 
 import UserviewNavBar from './components/user.viewNavBar.jsx';
 import BoardingDetails from './components/boardingDetails.jsx';
 import AddBoarding from './pages/admin/addBoarding.jsx';
 import Sidebar from './components/Sidebar.jsx';
-//Import other pages as needed
-// Layout component that includes the navbar
+
 
 const Layout = ({ children }) => {
   return (
