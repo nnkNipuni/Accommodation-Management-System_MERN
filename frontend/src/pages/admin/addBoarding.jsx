@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import axios from 'axios';
 
 const AddBoarding = () => {
     const [formData, setFormData] = useState({
-        adTitle: '',
+        title: '',
         description: '',
         facilities: '',
         images: [],
@@ -17,29 +16,37 @@ const AddBoarding = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleImageUpload = (e) => {
-        setFormData({ ...formData, images: Array.from(e.target.files) });
+    const handleImageUpload = async (e) => {
+        const files = Array.from(e.target.files);
+        const base64Images = await Promise.all(files.map(file => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }));
+        setFormData({ ...formData, images: base64Images });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const formDataToSend = new FormData();
-        formDataToSend.append("Adtitle", formData.adTitle);
-        formDataToSend.append("description", formData.description);
-        formDataToSend.append("facilities", formData.facilities);
-        formDataToSend.append("price", formData.price);
-        formDataToSend.append("AccommodationType", formData.accommodationType);
-        
-        // Append images
-        formData.images.forEach((image) => {
-            formDataToSend.append("images", image);
-        });
+            // Prepare the data to send as JSON
+        const dataToSend = {
+            title: formData.title,
+            description: formData.description,
+            facilities: formData.facilities,
+            price: formData.price,
+            AccommodationType: formData.accommodationType,
+            images: formData.images, // This will be an array of base64 strings
+        };
+
 
         try {
-            const response = await axios.post("http://localhost:5001/api/advertisements", formDataToSend, {
+            const response = await axios.post("http://localhost:5001/api/advertisements", dataToSend, {
                 headers: {
-                    "Content-Type": "multipart/form-data",
+                    "Content-Type": "application/json",
                 },
             });
 
@@ -48,7 +55,7 @@ const AddBoarding = () => {
 
             // Reset form after submission
             setFormData({
-                adTitle: '',
+                title: '',
                 description: '',
                 facilities: '',
                 images: [],
@@ -67,9 +74,9 @@ const AddBoarding = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input
                     type="text"
-                    name="adTitle"
-                    placeholder="Ad Title"
-                    value={formData.adTitle}
+                    name="title"
+                    placeholder="Advertisement title"
+                    value={formData.title}
                     onChange={handleChange}
                     className="border p-2 rounded w-full"
                     required

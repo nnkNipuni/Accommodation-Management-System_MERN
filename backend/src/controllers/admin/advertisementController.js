@@ -1,48 +1,53 @@
 import Advertisement from '../../models/advertisement.model.js'; 
 import mongoose from 'mongoose';
-import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 
-// Configure Multer for image uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-
-const upload = multer({ storage });
-
-// Create a new advertisement
+//create new Ad
 export const createAdvertisement = async (req, res) => {
   try {
     console.log("Incoming Request Body:", req.body);
-    const { Adtitle, description, facilities, price, image, AccommodationType } = req.body;
-    
-    // Validate required fields
-    if (!Adtitle || !description || !facilities || !price || !image || !AccommodationType) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
-    
-   // Get image URLs from uploaded files
-   const images = req.files ? req.files.map(file => file.path) : [];
+    const { title, description, facilities, price, images, AccommodationType } = req.body;
 
+    // Validate required fields
+    if (!title || !description || !facilities || !price || !AccommodationType) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const imagePaths = [];
+
+    try {
+      // Handle image upload: Convert base64 to a file
+      for (const img of images) {
+        const base64Data = img.split(",")[1]; // Remove the base64 prefix
+        const buffer = Buffer.from(base64Data, "base64");
+        const filePath = path.join("uploads", `${Date.now()}-image.png`);
+        fs.writeFileSync(filePath, buffer);
+        imagePaths.push(filePath);
+      }
+    } catch (imageError) {
+      console.error("Error processing images:", imageError);
+      return res.status(500).json({ message: "Error processing images", error: imageError.message });
+    }
+
+    // Save advertisement to the database
     const newAdvertisement = new Advertisement({
-      Adtitle,
+      title,
       description,
-      facilities: facilities.split(','),   // Convert comma-separated string to array
+      facilities: facilities.split(","),
       price,
-      image,
-      AccommodationType
+      image: imagePaths,
+      AccommodationType,
     });
-    
+
     const savedAdvertisement = await newAdvertisement.save();
     res.status(201).json(savedAdvertisement);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating advertisement', error: error.message });
+    console.error("Error creating advertisement:", error);
+    res.status(500).json({ message: "Error creating advertisement", error: error.message });
   }
 };
+
 
 // Get all advertisements
 export const getAllAdvertisements = async (req, res) => {
@@ -75,6 +80,7 @@ export const getAdvertisementById = async (req, res) => {
     res.status(500).json({ message: 'Error fetching advertisement', error: error.message });
   }
 };
+
 
 // Update advertisement
 export const updateAdvertisement = async (req, res) => {
@@ -152,7 +158,7 @@ export const searchAdvertisements = async (req, res) => {
     // Text search
     if (query) {
       searchCriteria.$or = [
-        { Adtitle: { $regex: query, $options: 'i' } },
+        { title: { $regex: query, $options: 'i' } },
         { description: { $regex: query, $options: 'i' } },
         { AccommodationType: { $regex: query, $options: 'i' } }
       ];
@@ -183,6 +189,5 @@ export const searchAdvertisements = async (req, res) => {
     res.status(500).json({ message: 'Error searching advertisements', error: error.message });
   }
 
+  
 };
-
-export const uploadMiddleware = upload.array("images", 5);

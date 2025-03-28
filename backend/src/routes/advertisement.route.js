@@ -6,14 +6,15 @@ import {
   updateAdvertisement,
   deleteAdvertisement,
   getAdvertisementsByCategory,
-  searchAdvertisements
+  searchAdvertisements,
+
 } from '../controllers/admin/advertisementController.js';
-import uploadMiddleware from '../middleware/uploadImages_middleware.js'; // Import the upload middleware
+
 
 const router = express.Router();
 
 // Create a new advertisement
-router.post('/', uploadMiddleware,createAdvertisement);
+router.post('/', createAdvertisement);
 
 // Get all advertisements
 router.get('/', getAllAdvertisements);
@@ -26,7 +27,8 @@ router.get('/type/:AccommodationType', getAdvertisementsByCategory);
 
 // Get, update, delete a specific advertisement by ID
 router.get('/:id', getAdvertisementById);
-router.put('/:id', uploadMiddleware,updateAdvertisement);
+router.put('/:id', updateAdvertisement);
 router.delete('/:id', deleteAdvertisement);
+
 
 export default router;
