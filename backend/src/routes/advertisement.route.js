@@ -7,7 +7,9 @@ import {
   updateAdvertisement,
   deleteAdvertisement,
   approvAdverticment,
-  getAdvertisementsByCategory,
+  filterByType,
+  getApprovedAdvertisements,
+  filterByPrice,
   searchAdvertisements,
 } from "../controllers/admin/advertisementController.js";
 
@@ -33,8 +35,14 @@ router.put("/:id", updateAdvertisement); // Update advertisement
 router.delete("/:id", deleteAdvertisement); // Delete advertisement
 
 // Advertisement search and filtering routes
-router.get("/search", searchAdvertisements); // Search advertisements
-router.get("/type/:AccommodationType", getAdvertisementsByCategory); // Get advertisements by category
+// ✅ Fetch all approved advertisements
+router.get("/search",getApprovedAdvertisements);
+
+// ✅ Filter advertisements by type
+router.get("/type/:type",filterByType);
+
+// ✅ Filter advertisements by price range
+router.get("/filter/price",filterByPrice);
 
 // Advertisement approval route
 router.put("/approve/:id", approvAdverticment); // Approve advertisement

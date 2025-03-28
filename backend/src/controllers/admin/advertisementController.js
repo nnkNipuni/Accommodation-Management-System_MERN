@@ -123,7 +123,7 @@ export const getAdvertisementsByCategory = async (req, res) => {
   try {
     const { AccommodationType } = req.params;
     
-    const advertisements = await Advertisement.find({ AccommodationType }).sort({ createdAt: -1 });
+    const advertisements = await Advertisement.find({ AccommodationType, approve: "Approved" }).sort({ createdAt: -1 });
     
     res.status(200).json(advertisements);
   } catch (error) {
@@ -132,48 +132,60 @@ export const getAdvertisementsByCategory = async (req, res) => {
 };
 
 // Search advertisements
-// 
 
 // Enhanced search advertisements function
 export const searchAdvertisements = async (req, res) => {
   try {
-    const { query, minPrice, maxPrice, type, facilities } = req.query;
-    
-    let searchCriteria = {};
-    
-    // Text search
-    if (query) {
-      searchCriteria.$or = [
-        { title: { $regex: query, $options: 'i' } },
-        { description: { $regex: query, $options: 'i' } },
-        { AccommodationType: { $regex: query, $options: 'i' } }
-      ];
-    }
-    
-    // Price range
-    if (minPrice || maxPrice) {
-      searchCriteria.price = {};
-      if (minPrice) searchCriteria.price.$gte = Number(minPrice);
-      if (maxPrice) searchCriteria.price.$lte = Number(maxPrice);
-    }
-    
-    // Accommodation type
-    if (type) {
-      searchCriteria.AccommodationType = type;
-    }
-    
-    // Facilities
-    if (facilities) {
-      const facilitiesArray = facilities.split(',');
-      searchCriteria.facilities = { $all: facilitiesArray };
-    }
-    
-    const advertisements = await Advertisement.find(searchCriteria).sort({ createdAt: -1 });
-    
-    res.status(200).json(advertisements);
-  } catch (error) {
-    res.status(500).json({ message: 'Error searching advertisements', error: error.message });
-  }
+    const { query } = req.query;
+    const searchQuery = query
+      ? {
+          approve: "Approved",
+          $or: [
+            { title: { $regex: query, $options: "i" } },
+            { description: { $regex: query, $options: "i" } },
+            { location: { $regex: query, $options: "i" } },
+          ],
+        }
+      : { approve: "Approved" };
 
-  
+    const ads = await Advertisement.find(searchQuery);
+    res.json(ads);
+  } catch (error) {
+    res.status(500).json({ message: "Error searching advertisements", error });
+  }
+};
+
+// ✅ Filter advertisements by accommodation type
+export const filterByType = async (req, res) => {
+  try {
+    const { type } = req.params;
+    const ads = await Advertisement.find({ approve: "Approved", accommodationType: type });
+    res.json(ads);
+  } catch (error) {
+    res.status(500).json({ message: "Error filtering advertisements", error });
+  }
+};
+
+// ✅ Fetch all approved advertisements
+export const getApprovedAdvertisements = async (req, res) => {
+  try {
+    const ads = await Advertisement.find({ approve: "Approved" });
+    res.json(ads);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching advertisements", error });
+  }
+};
+
+// ✅ Filter advertisements by price range
+export const filterByPrice = async (req, res) => {
+  try {
+    const { min, max } = req.query;
+    const ads = await Advertisement.find({
+      approve: "Approved",
+      price: { $gte: min || 5000, $lte: max || 80000 },
+    });
+    res.json(ads);
+  } catch (error) {
+    res.status(500).json({ message: "Error filtering by price", error });
+  }
 };
