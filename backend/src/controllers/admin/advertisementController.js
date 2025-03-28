@@ -1,9 +1,23 @@
 import Advertisement from '../../models/advertisement.model.js'; 
 import mongoose from 'mongoose';
+import multer from 'multer';
+
+// Configure Multer for image uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage });
 
 // Create a new advertisement
 export const createAdvertisement = async (req, res) => {
   try {
+    console.log("Incoming Request Body:", req.body);
     const { Adtitle, description, facilities, price, image, AccommodationType } = req.body;
     
     // Validate required fields
@@ -11,10 +25,13 @@ export const createAdvertisement = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
     
+   // Get image URLs from uploaded files
+   const images = req.files ? req.files.map(file => file.path) : [];
+
     const newAdvertisement = new Advertisement({
       Adtitle,
       description,
-      facilities,
+      facilities: facilities.split(','),   // Convert comma-separated string to array
       price,
       image,
       AccommodationType
@@ -37,20 +54,6 @@ export const getAllAdvertisements = async (req, res) => {
   }
 };
 
-// Get advertisement by ID
-// export const getAdvertisementById = async (req, res) => {
-//   try {
-//     const advertisement = await Advertisement.findById(req.params.id);
-    
-//     if (!advertisement) {
-//       return res.status(404).json({ message: 'Advertisement not found' });
-//     }
-    
-//     res.status(200).json(advertisement);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error fetching advertisement', error: error.message });
-//   }
-// };
 
 export const getAdvertisementById = async (req, res) => {
   try {
@@ -72,45 +75,6 @@ export const getAdvertisementById = async (req, res) => {
     res.status(500).json({ message: 'Error fetching advertisement', error: error.message });
   }
 };
-
-// Update advertisement
-// export const updateAdvertisement = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const updates = req.body;
-    
-//     const advertisement = await Advertisement.findByIdAndUpdate(
-//       id, 
-//       updates, 
-//       { new: true, runValidators: true }
-//     );
-    
-//     if (!advertisement) {
-//       return res.status(404).json({ message: 'Advertisement not found' });
-//     }
-    
-//     res.status(200).json(advertisement);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error updating advertisement', error: error.message });
-//   }
-// };
-
-// Delete advertisement
-// export const deleteAdvertisement = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-    
-//     const advertisement = await Advertisement.findByIdAndDelete(id);
-    
-//     if (!advertisement) {
-//       return res.status(404).json({ message: 'Advertisement not found' });
-//     }
-    
-//     res.status(200).json({ message: 'Advertisement deleted successfully' });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error deleting advertisement', error: error.message });
-//   }
-// };
 
 // Update advertisement
 export const updateAdvertisement = async (req, res) => {
@@ -220,3 +184,5 @@ export const searchAdvertisements = async (req, res) => {
   }
 
 };
+
+export const uploadMiddleware = upload.array("images", 5);

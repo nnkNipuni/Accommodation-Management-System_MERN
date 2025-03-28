@@ -8,9 +8,11 @@ import reviewRoutes from "./src/routes/review.routes.js";
 
 // Load environment variables from a .env file
 dotenv.config();
+
 // Initialize Express application
 const app   = express();
-app.use(cors({ origin: "http://localhost:5173" })); // Adjust if needed
+app.use(cors({ origin: "http://localhost:5173",methods: "GET, POST, PUT, DELETE", credentials: true, })); // Allow cookies and authorization headers
+
 
 // Middleware
 app.use(express.json()); // For parsing application/json
