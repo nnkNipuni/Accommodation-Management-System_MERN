@@ -18,6 +18,8 @@ app.use(cors({ origin: "http://localhost:5173",methods: "GET, POST, PUT, DELETE"
 app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
 
+app.use('/uploads', express.static('uploads'));
+
 // Base route
 app.get("/Accmmodation_System", (req, res) => {
     res.send("server is ready");
