@@ -1,67 +1,67 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
 
 const AddBoarding = () => {
     const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        facilities: '',
+        title: "",
+        description: "",
+        facilities: "",
+        accommodationType: "",
+        price: "",
         images: [],
-        accommodationType: '',
-        price: '',
     });
+
+    const [selectedImages, setSelectedImages] = useState([]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleImageUpload = async (e) => {
+    const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
-        const base64Images = await Promise.all(files.map(file => {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }));
-        setFormData({ ...formData, images: base64Images });
+        setSelectedImages(files);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-            // Prepare the data to send as JSON
-        const dataToSend = {
-            title: formData.title,
-            description: formData.description,
-            facilities: formData.facilities,
-            price: formData.price,
-            AccommodationType: formData.accommodationType,
-            images: formData.images, // This will be an array of base64 strings
-        };
+        const dataToSend = new FormData();
+        dataToSend.append("title", formData.title);
+        dataToSend.append("description", formData.description);
+        dataToSend.append("facilities", formData.facilities);
+        dataToSend.append("price", formData.price);
+        dataToSend.append("AccommodationType", formData.accommodationType);
 
+        // Append images to FormData
+        selectedImages.forEach((file) => {
+            dataToSend.append("images", file);
+        });
 
         try {
-            const response = await axios.post("http://localhost:5001/api/advertisements", dataToSend, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+            const response = await axios.post(
+                "http://localhost:5001/api/advertisements",
+                dataToSend,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
 
             console.log("Boarding added:", response.data);
             alert("Boarding added successfully!");
 
             // Reset form after submission
             setFormData({
-                title: '',
-                description: '',
-                facilities: '',
+                title: "",
+                description: "",
+                facilities: "",
+                accommodationType: "",
+                price: "",
                 images: [],
-                accommodationType: '',
-                price: '',
             });
+            setSelectedImages([]);
         } catch (error) {
             console.error("Error adding boarding:", error.response?.data || error.message);
             alert("Failed to add boarding.");
@@ -134,5 +134,3 @@ const AddBoarding = () => {
 };
 
 export default AddBoarding;
-
-

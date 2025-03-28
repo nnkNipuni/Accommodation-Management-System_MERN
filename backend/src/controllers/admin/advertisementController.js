@@ -1,34 +1,19 @@
-import Advertisement from '../../models/advertisement.model.js'; 
+import Advertisement from "../../models/advertisement.model.js";
 import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
 
-//create new Ad
+// Create new Ad
 export const createAdvertisement = async (req, res) => {
   try {
-    console.log("Incoming Request Body:", req.body);
-    const { title, description, facilities, price, images, AccommodationType } = req.body;
+    const { title, description, facilities, price, AccommodationType } = req.body;
 
-    // Validate required fields
-    if (!title || !description || !facilities || !price || !images || !AccommodationType) {
+    if (!title || !description || !facilities || !price || !AccommodationType) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const imagePaths = [];
-
-    try {
-      // Handle image upload: Convert base64 to a file
-      for (const img of images) {
-        const base64Data = img.split(",")[1]; // Remove the base64 prefix
-        const buffer = Buffer.from(base64Data, "base64");
-        const filePath = path.join("uploads", `${Date.now()}-image.png`);
-        fs.writeFileSync(filePath, buffer);
-        imagePaths.push(filePath);
-      }
-    } catch (imageError) {
-      console.error("Error processing images:", imageError);
-      return res.status(500).json({ message: "Error processing images", error: imageError.message });
-    }
+    // Get uploaded file paths
+    const imagePaths = req.files.map((file) => file.path);
 
     // Save advertisement to the database
     const newAdvertisement = new Advertisement({
@@ -36,7 +21,7 @@ export const createAdvertisement = async (req, res) => {
       description,
       facilities: facilities.split(","),
       price,
-      image: imagePaths,
+      images: imagePaths, // Store paths instead of base64
       AccommodationType,
     });
 
@@ -82,54 +67,55 @@ export const getAdvertisementById = async (req, res) => {
 };
 
 
-// Update advertisement
+// approved advertisement
+export const approvAdverticment = async (req, res) => {
+  try {
+      const { id } = req.params;
+      const updatedAd = await Advertisement.findByIdAndUpdate(id, req.body, { new: true });
+
+      if (!updatedAd) {
+          return res.status(404).json({ message: "Advertisement not found" });
+      }
+
+      res.status(200).json(updatedAd);
+  } catch (error) {
+      res.status(500).json({ message: "Error updating advertisement", error: error.message });
+  }
+};
+//update asvertisement
 export const updateAdvertisement = async (req, res) => {
   try {
-    const { id } = req.params;
-    const updates = req.body;
+      const { id } = req.params;
+      const updatedData = req.body;
 
-    // Check if the ID is a valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid advertisement ID' });
-    }
+      const updatedAd = await Advertisement.findByIdAndUpdate(id, updatedData, { new: true });
 
-    const advertisement = await Advertisement.findByIdAndUpdate(id, updates, {
-      new: true,
-      runValidators: true,
-    });
+      if (!updatedAd) {
+          return res.status(404).json({ message: "Advertisement not found" });
+      }
 
-    if (!advertisement) {
-      return res.status(404).json({ message: 'Advertisement not found' });
-    }
-
-    res.status(200).json(advertisement);
+      res.status(200).json({ message: "Advertisement updated successfully", advertisement: updatedAd });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating advertisement', error: error.message });
+      res.status(500).json({ message: "Error updating advertisement", error: error.message });
   }
 };
 
 // Delete advertisement
 export const deleteAdvertisement = async (req, res) => {
   try {
-    const { id } = req.params;
+      const { id } = req.params;
 
-    // Check if the ID is a valid ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid advertisement ID' });
-    }
+      const deletedAd = await Advertisement.findByIdAndDelete(id);
 
-    const advertisement = await Advertisement.findByIdAndDelete(id);
+      if (!deletedAd) {
+          return res.status(404).json({ message: "Advertisement not found" });
+      }
 
-    if (!advertisement) {
-      return res.status(404).json({ message: 'Advertisement not found' });
-    }
-
-    res.status(200).json({ message: 'Advertisement deleted successfully' });
+      res.status(200).json({ message: "Advertisement deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting advertisement', error: error.message });
+      res.status(500).json({ message: "Error deleting advertisement", error: error.message });
   }
 };
-
 
 
 // Get advertisements by category

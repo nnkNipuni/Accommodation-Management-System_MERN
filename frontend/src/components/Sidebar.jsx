@@ -9,13 +9,13 @@ const Sidebar = () => {
                 <div className="text-xl font-bold">LOGO</div>
             </div>
             <nav className="flex flex-col mt-4">
-                <a href="#" className="flex items-center p-2 mb-2 hover:bg-gray-700">
+                <a href="/mybordings" className="flex items-center p-2 mb-2 hover:bg-gray-700">
                     <HomeIcon className="h-6 w-6" /> My Boardings
                 </a>
-                <a href="#" className="flex items-center p-2 mb-2 hover:bg-gray-700">
+                <a href="/addboarding" className="flex items-center p-2 mb-2 hover:bg-gray-700">
                     <BookOpenIcon className="h-6 w-6" /> Add New Boarding
                 </a>
-                <a href="#" className="flex items-center p-2 mb-2 hover:bg-gray-700">
+                <a href="/pendingapproval" className="flex items-center p-2 mb-2 hover:bg-gray-700">
                     <UserIcon className="h-6 w-6" /> Pending Approvals
                 </a>
             </nav>
