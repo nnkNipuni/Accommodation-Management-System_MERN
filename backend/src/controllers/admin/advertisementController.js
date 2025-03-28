@@ -10,7 +10,7 @@ export const createAdvertisement = async (req, res) => {
     const { title, description, facilities, price, images, AccommodationType } = req.body;
 
     // Validate required fields
-    if (!title || !description || !facilities || !price || !AccommodationType) {
+    if (!title || !description || !facilities || !price || !images || !AccommodationType) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
