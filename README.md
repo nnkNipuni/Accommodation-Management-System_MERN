@@ -7,8 +7,8 @@ To address these challenges, our five-member team developed ApeBodima.lk, a comp
 
 Team Members
 
-K.A.Nipuni Navodya Kahandawa(myself)
-Induni Umanga Warnachinthake
-P.A.Thanushi Nethsarani
-G.A.M.T.N.Bandara
-B.S.A.Mendis
+K.A.Nipuni Navodya Kahandawa(myself)  
+Induni Umanga Warnachinthake  
+P.A.Thanushi Nethsarani  
+G.A.M.T.N.Bandara  
+B.S.A.Mendis  
