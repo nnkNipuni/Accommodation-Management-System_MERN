@@ -230,28 +230,44 @@ export const approveAdvertisement = async (req, res) => {
 
 //added today
 // Get all approved advertisements with payment status
-export const getMyApprovedAdsWithPayment = async (req, res) => {
+// export const getMyApprovedAdsWithPayment = async (req, res) => {
+//   try {
+//     const { ownerId } = req.query;
+
+//     if (!ownerId) {
+//       return res.status(400).json({ message: "Owner ID is required" });
+//     }
+
+//     const ads = await Advertisement.find({
+//       approve: "Approved",
+//       owner: ownerId  // assuming you store owner in a field called 'owner'
+//     })
+//       .populate("paymentStatus")
+//       .sort({ createdAt: -1 });
+
+//     res.status(200).json(ads);
+//   } catch (error) {
+//     console.error("Error fetching my ads with payment status:", error);
+//     res.status(500).json({ message: "Error fetching advertisements", error: error.message });
+//   }
+// };
+
+export const getMyApprovedAdsWithPayment = async (req, res) => {   //this is for retrieving payment verified admin approved but all enables disabled both ads
   try {
-    const { ownerId } = req.query;
-
-    if (!ownerId) {
-      return res.status(400).json({ message: "Owner ID is required" });
-    }
-
     const ads = await Advertisement.find({
       approve: "Approved",
-      owner: ownerId  // assuming you store owner in a field called 'owner'
-    })
-      .populate("paymentStatus")
-      .sort({ createdAt: -1 });
+     
+    }).populate("paymentStatus");
 
-    res.status(200).json(ads);
+    const verifiedAds = ads.filter(ad =>
+      ad.paymentStatus && ad.paymentStatus.status === "Verified"
+    );
+
+    res.status(200).json(verifiedAds);
   } catch (error) {
-    console.error("Error fetching my ads with payment status:", error);
-    res.status(500).json({ message: "Error fetching advertisements", error: error.message });
+    res.status(500).json({ message: "Error fetching verified advertisements", error: error.message });
   }
 };
-
 
 
 export const updateAdvertisement = async (req, res) => {

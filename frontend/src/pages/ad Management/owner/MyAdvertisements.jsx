@@ -178,7 +178,7 @@ const MyAdvertisements = () => {
 
   const fetchApprovedAdvertisements = async () => {
     try {
-      const response = await axios.get("http://localhost:5001/api/advertisements/approved-verified");
+      const response = await axios.get("http://localhost:5001/api/advertisements/approved-populated");
       const approvedAds = response.data;
       setApprovedAds(approvedAds);
       setLoading(false);
