@@ -41,8 +41,6 @@ const Pending = () => {
   };
 
   const handlePayment = (adId) => {
-    // Payment handling logic
-    alert(`Redirecting to payment for ad ${adId}`);
     navigate(`/payment/${adId}`);
   };
 

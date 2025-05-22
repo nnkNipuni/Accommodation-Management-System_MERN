@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { GoogleMap, Marker, LoadScript } from "@react-google-maps/api";
@@ -31,6 +30,7 @@ const AddBoarding = () => {
     location: ""
   });
   const autocompleteRef = useRef(null);
+  const inputRef = useRef(null); // Add a ref for the input element
 
   // Facility icons mapping
   const facilityIcons = {
@@ -76,7 +76,6 @@ const AddBoarding = () => {
     return true;
   };
 
-
   const validateForm = () => {
     let isValid = true;
   
@@ -117,7 +116,6 @@ const AddBoarding = () => {
   
     return isValid;
   };
-  
 
   // Handle image selection and preview
   const handleImageUpload = (e) => {
@@ -149,38 +147,100 @@ const AddBoarding = () => {
 
   // Initialize Google Places Autocomplete
   const initAutocomplete = () => {
-    if (!window.google || autocompleteRef.current) return;
+    console.log("Initializing autocomplete...");
     
+    // Check if Google Maps API is loaded
+    if (!window.google || !window.google.maps || !window.google.maps.places) {
+      console.error("Google Maps Places API not loaded yet");
+      return;
+    }
+    
+    // Check if autocomplete is already initialized
+    if (autocompleteRef.current) {
+      console.log("Autocomplete already initialized");
+      return;
+    }
+    
+    // Get the input element
     const inputElement = document.getElementById("location-input");
-    if (!inputElement) return;
+    if (!inputElement) {
+      console.error("Location input element not found");
+      return;
+    }
     
-    autocompleteRef.current = new window.google.maps.places.Autocomplete(inputElement, {
-      componentRestrictions: { country: "LK" }
-    });
+    console.log("Creating autocomplete instance...");
     
-    autocompleteRef.current.addListener("place_changed", () => {
-      const place = autocompleteRef.current.getPlace();
+    try {
+      // Create the autocomplete instance
+      autocompleteRef.current = new window.google.maps.places.Autocomplete(inputElement, {
+        componentRestrictions: { country: "LK" },
+        fields: ["formatted_address", "geometry", "name"], // Specify the data fields to improve performance
+        types: ["geocode", "establishment"] // Restrict to addresses and establishments
+      });
       
-      if (!place.geometry || !place.geometry.location) {
-        console.log("No details available for this place");
-        return;
-      }
+      console.log("Autocomplete instance created successfully");
       
-      setFormData(prev => ({...prev, location: place.formatted_address || place.name}));
-      setErrors(prev => ({...prev, location: ""}));
-      
-      const newPosition = {
-        lat: place.geometry.location.lat(),
-        lng: place.geometry.location.lng()
-      };
-      setMarkerPosition(newPosition);
-      
-      if (map) {
-        map.setCenter(newPosition);
-        map.setZoom(15);
-      }
-    });
+      // Add listener for place selection
+      autocompleteRef.current.addListener("place_changed", () => {
+        const place = autocompleteRef.current.getPlace();
+        console.log("Place selected:", place);
+        
+        if (!place.geometry || !place.geometry.location) {
+          console.error("No details available for this place");
+          return;
+        }
+        
+        // Update form data with the selected place
+        setFormData(prev => ({...prev, location: place.formatted_address || place.name}));
+        setErrors(prev => ({...prev, location: ""}));
+        
+        // Update marker position
+        const newPosition = {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng()
+        };
+        setMarkerPosition(newPosition);
+        
+        // Center the map on the selected location
+        if (map) {
+          map.setCenter(newPosition);
+          map.setZoom(15);
+        }
+      });
+    } catch (error) {
+      console.error("Error initializing Places Autocomplete:", error);
+    }
   };
+
+  // Use effect to initialize autocomplete after component mounts and input is available
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        initAutocomplete();
+      } else {
+        console.log("Waiting for Google Maps API to load...");
+      }
+    }, 1000); // Wait a second to ensure DOM and Google APIs are ready
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Listen for Google Maps API script load event
+  useEffect(() => {
+    const handleGoogleMapsLoaded = () => {
+      console.log("Google Maps API loaded");
+      initAutocomplete();
+    };
+    
+    if (window.google && window.google.maps && window.google.maps.places) {
+      handleGoogleMapsLoaded();
+    } else {
+      window.addEventListener('google-maps-script-loaded', handleGoogleMapsLoaded);
+      return () => {
+        window.removeEventListener('google-maps-script-loaded', handleGoogleMapsLoaded);
+      };
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -322,7 +382,11 @@ const AddBoarding = () => {
       <LoadScript 
         googleMapsApiKey="AIzaSyBea4gs_gBa8W_WNY7dpW9gOMaS0PKjMNw" 
         libraries={libraries}
-        onLoad={initAutocomplete}
+        onLoad={() => {
+          console.log("LoadScript onLoad callback");
+          // Dispatch a custom event when Google Maps script is loaded
+          window.dispatchEvent(new Event('google-maps-script-loaded'));
+        }}
       >
         <div className="min-h-screen bg-gray-50 p-4 pt-20">
           <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
@@ -523,6 +587,7 @@ const AddBoarding = () => {
                     </div>
                     <input
                       id="location-input"
+                      ref={inputRef} // Add ref to the input
                       type="text"
                       name="location"
                       value={formData.location}

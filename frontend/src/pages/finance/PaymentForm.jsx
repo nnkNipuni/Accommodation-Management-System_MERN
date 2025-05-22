@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import SubmissionModal from './SubmissionModal';
-import { useParams } from 'react-router-dom';
+import axios from 'axios';
 
 function PaymentForm() {
   const { adId } = useParams();
@@ -10,6 +10,9 @@ function PaymentForm() {
     paymentdate: '',
     proof: null,
   });
+  //newly added
+  const [adDetails, setAdDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
@@ -18,6 +21,28 @@ function PaymentForm() {
   // For testing purposes, use a valid MongoDB ObjectId
   // This should be replaced with actual user authentication
   const testUserId = '65f1a2b3c4d5e6f7a8b9c0d1';
+  
+  // Fetch ad details when component loads //newly added
+  useEffect(() => {
+    const fetchAdDetails = async () => {
+      if (adId) {
+        try {
+          const response = await axios.get(`http://localhost:5001/api/advertisements/${adId}`);
+          setAdDetails(response.data);
+          setFormData(prev => ({
+            ...prev,
+            amount: response.data.price ? response.data.price.toString() : ''
+          }));
+        } catch (error) {
+          console.error("Error fetching ad details:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    
+    fetchAdDetails();
+  }, [adId]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -59,7 +84,7 @@ function PaymentForm() {
     }
 
     const formDataToSend = new FormData();
-    formDataToSend.append('adId', adId);
+    formDataToSend.append('adId', adId); // Include the advertisement ID
     formDataToSend.append('amount', formData.amount);
     formDataToSend.append('paymentdate', formData.paymentdate);
     formDataToSend.append('proof', formData.proof);
@@ -97,6 +122,10 @@ function PaymentForm() {
       navigate('/transactions');
     }
   };
+//newly added
+  if (loading) {
+    return <div>Loading ad details...</div>;
+  }
 
   return (
     <div className="max-w-2xl mx-auto">

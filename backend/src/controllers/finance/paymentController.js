@@ -12,23 +12,23 @@ export const createPayment = async (req, res) => {
   try {
       console.log('Request body:', req.body);
       console.log('Request file:', req.file);
-
-  if (!req.file) {
+      
+      if (!req.file) {
           return res.status(400).json({ 
               success: false,
               message: 'Proof (PDF) file is required' 
           });
-  }
+      }
 
-      const { amount, paymentdate, userId } = req.body;
+      const { amount, paymentdate, userId, adId } = req.body;
 
       // Validate required fields
-      if (!amount || !paymentdate) {
+      if (!amount || !paymentdate || !adId) {
           return res.status(400).json({ 
               success: false, 
-              message: "Please fill all the details" 
+              message: "Please fill all the details including advertisement ID" 
           });
-  }
+      }
 
       // Validate amount
       const parsedAmount = parseFloat(amount);
@@ -37,31 +37,24 @@ export const createPayment = async (req, res) => {
               success: false, 
               message: 'Invalid amount' 
           });
-  }
+      }
 
       // Validate date
-  const date = new Date(paymentdate);
+      const date = new Date(paymentdate);
       if (isNaN(date.getTime())) {
           return res.status(400).json({ 
               success: false, 
               message: 'Invalid payment date' 
           });
-  }
-
-      // Validate userId
-      if (!userId) {
-          return res.status(400).json({
-              success: false,
-              message: 'User ID is required'
-          });
       }
 
       // Create payment object
       const paymentData = {
-          usersId: userId,
+          adId: adId,  // Include the advertisement ID
+          boardingOwnerId: userId,
           amount: parsedAmount,
           paymentdate: date,
-          proof: `/uploads/${req.file.filename}`,
+          proof: `/uploads2/${req.file.filename}`,
           status: 'Pending' 
       };
 
@@ -72,7 +65,7 @@ export const createPayment = async (req, res) => {
       await newPayment.save();
 
       console.log('Payment saved successfully:', newPayment);
-      
+
       res.status(201).json({ 
           success: true,
           message: 'Payment submitted successfully', 
