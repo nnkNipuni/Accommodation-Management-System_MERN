@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
+import AdminOwnerNavbar from '../../../components/AdminOwnerNavbar';
 
 const OwnerPaymentManagement = () => {
   const [payments, setPayments] = useState([]);
@@ -19,7 +20,11 @@ const OwnerPaymentManagement = () => {
         if (searchFilters.status) params.append('status', searchFilters.status);
 
         const response = await axios.get(`http://localhost:5001/api/payments/search?${params.toString()}`);
-        setPayments(response.data.payments || []);
+        const sortedPayments = response.data.payments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setPayments(sortedPayments);
+        
+        
+
         setLoading(false);
       } catch (error) {
         console.error('Error fetching payments:', error);
@@ -95,8 +100,10 @@ const OwnerPaymentManagement = () => {
   };
 
   return (
+    <>
+    <AdminOwnerNavbar role="admin" />
     <div className="p-6">
-      <h2 className="text-3xl font-bold mb-6 text-gray-800">Owner Payment Management</h2>
+      <h2 className="text-2xl mt-16 font-bold mb-6 text-gray-800">Owner Payment Management</h2>
 
       {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -147,7 +154,7 @@ const OwnerPaymentManagement = () => {
                 <th className="p-3 border">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            {/* <tbody>
               {payments.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="text-center py-6 text-gray-500">No payments found</td>
@@ -188,7 +195,81 @@ const OwnerPaymentManagement = () => {
                   </tr>
                 ))
               )}
+            </tbody> */}
+
+            <tbody>
+              {payments.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="text-center py-6 text-gray-500">No payments found</td>
+                </tr>
+              ) : (
+                <>
+                  {/* Top Most Recent Payment */}
+                  <tr key={payments[0]._id} className="bg-gray-50 font-semibold">
+                    <td className="p-3 border">{payments[0]?.adId?._id || payments[0].adId || 'N/A'}</td>
+                    <td className="p-3 border">{payments[0]._id}</td>
+                    <td className="p-3 border">{payments[0].amount}</td>
+                    <td className="p-3 border">{new Date(payments[0].paymentdate).toLocaleDateString()}</td>
+                    <td className="p-3 border text-blue-600 hover:underline">
+                      <a href={payments[0].proof} download>Download</a>
+                    </td>
+                    <td className="p-3 border">
+                      <select
+                        value={payments[0].status}
+                        onChange={(e) => handleStatusChange(payments[0]._id, e.target.value)}
+                        className="border border-gray-300 rounded px-2 py-1 focus:ring focus:ring-indigo-200"
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Verified">Verified</option>
+                        <option value="Rejected">Rejected</option>
+                      </select>
+                    </td>
+                    <td className="p-3 border">
+                      <button
+                        onClick={() => handleDelete(payments[0]._id)}
+                        className="text-sm bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+
+                  {/* Remaining Payments */}
+                  {payments.slice(1).map(p => (
+                    <tr key={p._id} className="hover:bg-gray-50">
+                      <td className="p-3 border">{p?.adId?._id || p.adId || 'N/A'}</td>
+                      <td className="p-3 border">{p._id}</td>
+                      <td className="p-3 border">{p.amount}</td>
+                      <td className="p-3 border">{new Date(p.paymentdate).toLocaleDateString()}</td>
+                      <td className="p-3 border text-blue-600 hover:underline">
+                        <a href={p.proof} download>Download</a>
+                      </td>
+                      <td className="p-3 border">
+                        <select
+                          value={p.status}
+                          onChange={(e) => handleStatusChange(p._id, e.target.value)}
+                          className="border border-gray-300 rounded px-2 py-1 focus:ring focus:ring-indigo-200"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Verified">Verified</option>
+                          <option value="Rejected">Rejected</option>
+                        </select>
+                      </td>
+                      <td className="p-3 border">
+                        <button
+                          onClick={() => handleDelete(p._id)}
+                          className="text-sm bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </>
+              )}
             </tbody>
+
+
           </table>
         </div>
       )}
@@ -203,6 +284,7 @@ const OwnerPaymentManagement = () => {
         </button>
       </div>
     </div>
+    </>
   );
 };
 

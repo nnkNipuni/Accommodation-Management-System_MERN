@@ -12,6 +12,7 @@ import {
   getVerifiedPaidAdvertisements,
   getMonthlyAdvertisementReport,
   getMyApprovedAdsWithPayment,
+  getApprovedAdsWithoutVerifiedPayment,
 
   // filterByType,
   // getApprovedAdvertisements,
@@ -36,6 +37,8 @@ const upload = multer({ storage });
 router.get("/approved-verified", getVerifiedPaidAdvertisements);
 router.get("/approved", getApprovedAdvertisements);
 router.get("/approved-populated", getMyApprovedAdsWithPayment);
+router.get('/approved-unpaid', getApprovedAdsWithoutVerifiedPayment);
+
 // Advertisement CRUD routes
 router.post("/", upload.array("images", 5), createAdvertisement); // Create a new advertisement
  // Get all approved advertisements

@@ -178,7 +178,7 @@ const MyAdvertisements = () => {
 
   const fetchApprovedAdvertisements = async () => {
     try {
-      const response = await axios.get("http://localhost:5001/api/advertisements/approved-populated");
+      const response = await axios.get("http://localhost:5001/api/advertisements/approved-verified");
       const approvedAds = response.data;
       setApprovedAds(approvedAds);
       setLoading(false);
@@ -363,38 +363,69 @@ const MyAdvertisements = () => {
         ) : approvedAds.length === 0 ? (
           <p>No approved advertisements available.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {approvedAds.map((ad) => (
-              <div key={ad._id} className="border rounded-lg p-4 shadow-md">
-                <h2 className="text-lg font-bold">{ad.title}</h2>
-                <p className="text-gray-600">{ad.description}</p>
-                <p className="text-gray-800">Price: LKR {ad.price}</p>
-                <p className="text-gray-600">Facilities: {ad.facilities.join(", ")}</p>
-                <p className="text-gray-600">Type: {ad.AccommodationType}</p>
-                <p className="text-gray-600">Location: {ad.location || "Not specified"}</p>
-
-                <div className="mt-2">
-                  {ad.images.length > 0 && (
-                    <img
-                      src={`http://localhost:5001/${ad.images[0]}`}
-                      alt={ad.title}
-                      className="w-full h-40 object-cover rounded"
-                    />
-                  )}
-                </div>
-
-                <div className="flex flex-wrap gap-2 mt-3 items-center">
-                  <button onClick={() => handleEdit(ad)} className="border border-blue-500 text-blue-500 px-3 py-1 rounded hover:bg-blue-50">Edit</button>
-                  <button onClick={() => handleDelete(ad._id)} className="border border-red-500 text-red-500 px-3 py-1 rounded hover:bg-red-50">Delete</button>
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" checked={ad.enabled !== false} onChange={() => handleToggle(ad._id, ad.enabled !== false)} />
-                    <span className="text-sm">Enabled</span>
-                  </label>
-                </div>
-              </div>
-            ))}
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          
+           {approvedAds.map((ad) => (
+    <div key={ad._id} className="bg-white rounded-lg shadow-md overflow-hidden transition hover:shadow-lg flex flex-col">
+      {ad.images?.[0] ? (
+        <img
+          src={`http://localhost:5001/${ad.images[0]}`}
+          alt={ad.title}
+          className="w-full h-40 object-cover"
+        />
+      ) : (
+        <div className="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-400 text-sm">No Image</div>
+      )}
+      <div className="p-4 flex flex-col justify-between flex-grow">
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold text-gray-800">{ad.title}</h2>
+          <p className="text-sm text-gray-600 line-clamp-3">{ad.description}</p>
+          <p className="text-sm text-indigo-600 font-semibold">LKR {ad.price}</p>
+          <p className="text-sm text-gray-500">Location: {ad.location || "Not specified"}</p>
+          <p className="text-sm text-gray-500">Type: {ad.AccommodationType}</p>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {ad.facilities?.length > 0 ? (
+              ad.facilities.map((f, i) => (
+                <span key={i} className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full">
+                  {f}
+                </span>
+              ))
+            ) : (
+              <span className="text-sm text-gray-400">No facilities listed</span>
+            )}
           </div>
-        )}
+        </div>
+        <div className="flex justify-between items-center mt-4 gap-2">
+          <button
+            onClick={() => handleEdit(ad)}
+            className="w-full text-sm border border-blue-600 text-blue-600 rounded-md py-1 hover:bg-blue-50 transition"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => handleDelete(ad._id)}
+            className="w-full text-sm border border-red-600 text-red-600 rounded-md py-1 hover:bg-red-50 transition"
+          >
+            Delete
+          </button>
+          <label className="flex items-center text-sm gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={ad.enabled !== false}
+              onChange={() => handleToggle(ad._id, ad.enabled !== false)}
+              className="accent-indigo-600"
+            />
+            <span className="text-gray-700">Enabled</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+          )}
+
+ 
 
         {editAd && (
           <LoadScript googleMapsApiKey="AIzaSyBea4gs_gBa8W_WNY7dpW9gOMaS0PKjMNw" libraries={libraries} onLoad={initAutocomplete}>

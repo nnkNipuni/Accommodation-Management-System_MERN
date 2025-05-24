@@ -149,8 +149,8 @@ export default function BoardingDetails() {
   )}
 </div>
 
-              <div className="absolute top-1/2 transform -translate-y-1/2 flex justify-between w-full px-4">
-                <button
+<div className="absolute inset-0 flex justify-between items-center px-4">
+<button
                   onClick={() =>
                     setCurrentImage((prev) =>
                       prev > 0 ? prev - 1 : advertisement.images.length - 1

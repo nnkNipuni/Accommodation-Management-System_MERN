@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { 
-  HomeIcon, 
   UserIcon, 
   XCircleIcon,
   ArrowPathIcon,
   NewspaperIcon,
   PlusIcon,
- 
   Cog6ToothIcon,
   ArrowLeftOnRectangleIcon,
   ChevronDownIcon,
@@ -27,7 +25,7 @@ const Sidebar = ({ onToggle, isMobileOpen }) => {
     },
     {
       name: "My Advertisements",
-      icon:  NewspaperIcon,
+      icon: NewspaperIcon,
       path: "/myAds",
     },
     {
@@ -66,24 +64,22 @@ const Sidebar = ({ onToggle, isMobileOpen }) => {
 
   return (
     <div className={`fixed top-0 left-0 h-screen w-64 bg-gray-800 text-white shadow-lg flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
-      {/* Logo and Close Button (mobile) */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-700">
-        <div className="text-xl font-bold flex items-center">
-          <span className="bg-indigo-600 text-white p-2 rounded-lg mr-2">
-            <HomeIcon className="h-6 w-6" />
-          </span>
-          
-        </div>
+      <div className="flex items-center justify-center p-12 border-b border-gray-700">
+        <img 
+            src="/logo2.png" 
+            alt="Logo"                    
+        /> </div>
+       
         <button 
           onClick={onToggle}
           className="md:hidden text-gray-400 hover:text-white"
         >
           <XCircleIcon className="h-6 w-6" />
         </button>
-      </div>
+     
 
       {/* Navigation Menu */}
-      <nav className="flex flex-col mt-4 px-2 space-y-1">
+      <nav className="flex flex-col mt-6 px-2 space-y-1">
         {menuItems.map((item, index) => (
           <React.Fragment key={item.name}>
             {item.submenu ? (

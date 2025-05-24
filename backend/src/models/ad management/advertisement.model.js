@@ -20,8 +20,7 @@ const advertisementSchema = new mongoose.Schema({
     },
     rejectionReason: { type: String, default: "" },
     location: { type: String, required: true },
-    // latitude: parseFloat(latitude),
-    // longitude: parseFloat(longitude),
+   
     enabled: { type: Boolean, default: true },
 
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],

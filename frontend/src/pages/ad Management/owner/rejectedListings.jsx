@@ -49,11 +49,23 @@ const RejectedListings = () => {
     }
   };
 
-  const handleResubmit = (adId) => {
-    // Resubmit functionality
-    alert(`Resubmitting advertisement ${adId} for approval`);
+  const handleResubmit = async (adId) => {
+    if (!window.confirm("Are you sure you want to resubmit this advertisement for approval?")) return;
+  
+    try {
+      await axios.put(`http://localhost:5001/api/advertisements/approve/${adId}`, {
+        approve: "Pending",
+        rejectionReason: ""
+      });
+  
+      alert("Advertisement resubmitted for admin approval!");
+      fetchRejectedAdvertisements(); // Refresh the list after resubmission
+    } catch (error) {
+      console.error("Error resubmitting advertisement:", error);
+      alert("Failed to resubmit. Please try again.");
+    }
   };
-
+  
   return (
     <>
 

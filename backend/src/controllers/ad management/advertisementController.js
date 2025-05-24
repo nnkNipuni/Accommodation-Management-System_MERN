@@ -195,22 +195,47 @@ export const rejectAdvertisement = async (req, res) => {
 
 
 
+// export const getVerifiedPaidAdvertisements = async (req, res) => {
+//   try {
+//     const ads = await Advertisement.find({
+//       approve: "Approved",
+//       enabled: true // ✅ Only get enabled ads
+//     }).populate("paymentStatus");
+
+//     const verifiedAds = ads.filter(ad =>
+//       ad.paymentStatus && ad.paymentStatus.status === "Verified"
+//     );
+
+//     res.status(200).json(verifiedAds);
+//   } catch (error) {
+//     res.status(500).json({ message: "Error fetching verified advertisements", error: error.message });
+//   }
+// };
+
+
+
 export const getVerifiedPaidAdvertisements = async (req, res) => {
   try {
+    // Step 1: Find verified payments
+    const verifiedPayments = await Payment.find({ status: "Verified" }).select("adId");
+
+    // Step 2: Extract ad IDs from those payments
+    const verifiedAdIds = verifiedPayments.map((p) => p.adId);
+
+    // Step 3: Fetch only approved + enabled ads that match
     const ads = await Advertisement.find({
+      _id: { $in: verifiedAdIds },
       approve: "Approved",
-      enabled: true // ✅ Only get enabled ads
-    }).populate("paymentStatus");
+      enabled: true,
+    });
 
-    const verifiedAds = ads.filter(ad =>
-      ad.paymentStatus && ad.paymentStatus.status === "Verified"
-    );
-
-    res.status(200).json(verifiedAds);
+    res.status(200).json(ads);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching verified advertisements", error: error.message });
+    console.error("Error fetching verified paid advertisements:", error);
+    res.status(500).json({ message: "Error fetching ads", error: error.message });
   }
 };
+
 
 // approved advertisement
 export const approveAdvertisement = async (req, res) => {
@@ -228,29 +253,6 @@ export const approveAdvertisement = async (req, res) => {
   }
 };
 
-//added today
-// Get all approved advertisements with payment status
-// export const getMyApprovedAdsWithPayment = async (req, res) => {
-//   try {
-//     const { ownerId } = req.query;
-
-//     if (!ownerId) {
-//       return res.status(400).json({ message: "Owner ID is required" });
-//     }
-
-//     const ads = await Advertisement.find({
-//       approve: "Approved",
-//       owner: ownerId  // assuming you store owner in a field called 'owner'
-//     })
-//       .populate("paymentStatus")
-//       .sort({ createdAt: -1 });
-
-//     res.status(200).json(ads);
-//   } catch (error) {
-//     console.error("Error fetching my ads with payment status:", error);
-//     res.status(500).json({ message: "Error fetching advertisements", error: error.message });
-//   }
-// };
 
 export const getMyApprovedAdsWithPayment = async (req, res) => {   //this is for retrieving payment verified admin approved but all enables disabled both ads
   try {
@@ -351,3 +353,16 @@ export const getMonthlyAdvertisementReport = async (req, res) => {
   }
 };
 
+export const getApprovedAdsWithoutVerifiedPayment = async (req, res) => {
+  try {
+    const ads = await Advertisement.find({ approve: "Approved", enabled: true })
+      .populate("paymentStatus");
+
+    const filtered = ads.filter(ad => !ad.paymentStatus || ad.paymentStatus.status !== "Verified");
+
+    res.status(200).json(filtered);
+  } catch (error) {
+    console.error("Error fetching ads without verified payment:", error);
+    res.status(500).json({ message: "Failed to fetch ads", error: error.message });
+  }
+};

@@ -41,33 +41,41 @@ export default function BoardingFilter() {
 
 
   const filteredAds = advertisements.filter(ad => {
+    // First check if ad is approved
     if (ad.approve !== "Approved") return false;
-  
-    // Title filter (normalize both sides)
-    if (titleQuery.trim() && !(ad.title || "").toLowerCase().includes(titleQuery.trim().toLowerCase())) return false;
+
+ 
+    if (titleQuery.trim()) {
+      const title = ad.title?.toLowerCase() || "";
+      const query = titleQuery.trim().toLowerCase();
     
-    // Location filter (normalize both sides)
-    if (
-      locationQuery.trim().length > 0 &&
-      !ad.location?.toLowerCase().includes(locationQuery.trim().toLowerCase())
-    ) {
-      return false;
+      // match from the start (like autocomplete)
+      if (!title.startsWith(query)) return false;
     }
-  
+    
+    
+    // Location filter
+    if (locationQuery.trim()) {
+      const location = ad.location?.toLowerCase() || "";
+      const query = locationQuery.trim().toLowerCase();
+    
+      // Match only if location starts with the typed query
+      if (!location.startsWith(query)) return false;
+    }
+    
+
     // Accommodation type filter
     if (accommodationType && ad.AccommodationType !== accommodationType) return false;
-  
+
     // Price filter
     if (ad.price < price[0] || ad.price > price[1]) return false;
-  
+
     // Facility filter
-    if (
-      selectedFacilities.length > 0 &&
-      (!ad.facilities || !selectedFacilities.every(f => ad.facilities.includes(f)))
-    ) {
-      return false;
+    if (selectedFacilities.length > 0) {
+      if (!ad.facilities) return false;
+      if (!selectedFacilities.every(f => ad.facilities.includes(f))) return false;
     }
-  
+
     return true;
   });
   

@@ -8,108 +8,215 @@ const validateAmount = (amount) => {
 };
 
 // Create Payment (Boarding Owner)
+// export const createPayment = async (req, res) => {
+//   try {
+//       console.log('Request body:', req.body);
+//       console.log('Request file:', req.file);
+      
+//       if (!req.file) {
+//           return res.status(400).json({ 
+//               success: false,
+//               message: 'Proof (PDF) file is required' 
+//           });
+//       }
+
+//       const { amount, paymentdate, userId, adId } = req.body;
+
+//       // Validate required fields
+//       if (!amount || !paymentdate || !adId) {
+//           return res.status(400).json({ 
+//               success: false, 
+//               message: "Please fill all the details including advertisement ID" 
+//           });
+//       }
+
+//       // Validate amount
+//       const parsedAmount = parseFloat(amount);
+//       if (isNaN(parsedAmount) || parsedAmount <= 0) {
+//           return res.status(400).json({ 
+//               success: false, 
+//               message: 'Invalid amount' 
+//           });
+//       }
+
+//       // Validate date
+//       const date = new Date(paymentdate);
+//       if (isNaN(date.getTime())) {
+//           return res.status(400).json({ 
+//               success: false, 
+//               message: 'Invalid payment date' 
+//           });
+//       }
+
+//       // Create payment object
+//       const paymentData = {
+//           adId: adId,  // Include the advertisement ID
+//           boardingOwnerId: userId,
+//           amount: parsedAmount,
+//           paymentdate: date,
+//           proof: `/uploads2/${req.file.filename}`,
+//           status: 'Pending' 
+//       };
+
+//       console.log('Creating payment with:', paymentData);
+
+//       // Save payment to database
+//       const newPayment = new Payment(paymentData);
+//       await newPayment.save();
+
+//       console.log('Payment saved successfully:', newPayment);
+
+//       res.status(201).json({ 
+//           success: true,
+//           message: 'Payment submitted successfully', 
+//           payment: newPayment 
+//       });
+//   } catch (error) {
+//       console.error("Detailed error in submitting the payment:", error);
+      
+//       // Handle specific MongoDB errors
+//       if (error.name === 'ValidationError') {
+//           return res.status(400).json({
+//               success: false,
+//               message: 'Validation Error',
+//               error: error.message
+//           });
+//       }
+
+//       // Handle duplicate key errors
+//       if (error.code === 11000) {
+//           return res.status(400).json({
+//               success: false,
+//               message: 'Duplicate payment detected',
+//               error: error.message
+//           });
+//       }
+
+//       // Handle CastError (invalid ObjectId)
+//       if (error.name === 'CastError') {
+//           return res.status(400).json({
+//               success: false,
+//               message: 'Invalid user ID format',
+//               error: error.message
+//           });
+//       }
+
+//       // Handle other errors
+//       res.status(500).json({ 
+//           success: false, 
+//           message: "Server Error", 
+//           error: error.message,
+//           stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+//       });
+//   }
+// };
+
+// Create Payment (Boarding Owner)
 export const createPayment = async (req, res) => {
-  try {
+    try {
       console.log('Request body:', req.body);
       console.log('Request file:', req.file);
       
       if (!req.file) {
-          return res.status(400).json({ 
-              success: false,
-              message: 'Proof (PDF) file is required' 
-          });
+        return res.status(400).json({ 
+          success: false,
+          message: 'Proof (PDF) file is required' 
+        });
       }
-
+  
       const { amount, paymentdate, userId, adId } = req.body;
-
+  
       // Validate required fields
       if (!amount || !paymentdate || !adId) {
-          return res.status(400).json({ 
-              success: false, 
-              message: "Please fill all the details including advertisement ID" 
-          });
+        return res.status(400).json({ 
+          success: false, 
+          message: "Please fill all the details including advertisement ID" 
+        });
       }
-
+  
       // Validate amount
       const parsedAmount = parseFloat(amount);
       if (isNaN(parsedAmount) || parsedAmount <= 0) {
-          return res.status(400).json({ 
-              success: false, 
-              message: 'Invalid amount' 
-          });
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Invalid amount' 
+        });
       }
-
+  
       // Validate date
       const date = new Date(paymentdate);
       if (isNaN(date.getTime())) {
-          return res.status(400).json({ 
-              success: false, 
-              message: 'Invalid payment date' 
-          });
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Invalid payment date' 
+        });
       }
-
+  
       // Create payment object
       const paymentData = {
-          adId: adId,  // Include the advertisement ID
-          boardingOwnerId: userId,
-          amount: parsedAmount,
-          paymentdate: date,
-          proof: `/uploads2/${req.file.filename}`,
-          status: 'Pending' 
+        adId: adId,
+        boardingOwnerId: userId,
+        amount: parsedAmount,
+        paymentdate: date,
+        proof: `/uploads2/${req.file.filename}`,
+        status: 'Pending' 
       };
-
+  
       console.log('Creating payment with:', paymentData);
-
+  
       // Save payment to database
       const newPayment = new Payment(paymentData);
       await newPayment.save();
-
+  
       console.log('Payment saved successfully:', newPayment);
-
-      res.status(201).json({ 
-          success: true,
-          message: 'Payment submitted successfully', 
-          payment: newPayment 
+  
+      // ✅ Link payment to advertisement
+      await Advertisement.findByIdAndUpdate(adId, {
+        paymentStatus: newPayment._id
       });
-  } catch (error) {
+  
+      res.status(201).json({ 
+        success: true,
+        message: 'Payment submitted successfully', 
+        payment: newPayment 
+      });
+    } catch (error) {
       console.error("Detailed error in submitting the payment:", error);
       
-      // Handle specific MongoDB errors
       if (error.name === 'ValidationError') {
-          return res.status(400).json({
-              success: false,
-              message: 'Validation Error',
-              error: error.message
-          });
+        return res.status(400).json({
+          success: false,
+          message: 'Validation Error',
+          error: error.message
+        });
       }
-
-      // Handle duplicate key errors
+  
       if (error.code === 11000) {
-          return res.status(400).json({
-              success: false,
-              message: 'Duplicate payment detected',
-              error: error.message
-          });
+        return res.status(400).json({
+          success: false,
+          message: 'Duplicate payment detected',
+          error: error.message
+        });
       }
-
-      // Handle CastError (invalid ObjectId)
+  
       if (error.name === 'CastError') {
-          return res.status(400).json({
-              success: false,
-              message: 'Invalid user ID format',
-              error: error.message
-          });
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid user ID format',
+          error: error.message
+        });
       }
-
-      // Handle other errors
+  
       res.status(500).json({ 
-          success: false, 
-          message: "Server Error", 
-          error: error.message,
-          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        success: false, 
+        message: "Server Error", 
+        error: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
-  }
-};
+    }
+  };
+  
+
 
 // Get User Payments
 export const getUserPayments = async (req, res) => {
@@ -194,30 +301,66 @@ export const getPaymentDetails = async (req, res) => {
 };
 
 // Update Payment Status (Admin)
+// export const updatePaymentStatus = async (req, res) => {
+//   const { paymentId } = req.params;
+//   const { status } = req.body;
+
+//   if (!['Pending', 'Verified', 'Rejected'].includes(status)) {
+//       return res.status(400).json({ message: 'Invalid status value' });
+//   }
+
+//   try {
+//       const updatedPayment = await Payment.findByIdAndUpdate(
+//           paymentId,
+//           { status },
+//           { new: true }
+//       );
+
+//       if (!updatedPayment) {
+//           return res.status(404).json({ message: 'Payment not found' });
+//       }
+
+//       res.status(200).json({ message: 'Payment status updated successfully', updatedPayment });
+//   } catch (error) {
+//       res.status(500).json({ message: 'Failed to update payment status', error: error.message });
+//   }
+// };
+
+// Update Payment Status (Admin)
 export const updatePaymentStatus = async (req, res) => {
-  const { paymentId } = req.params;
-  const { status } = req.body;
-
-  if (!['Pending', 'Verified', 'Rejected'].includes(status)) {
+    const { paymentId } = req.params;
+    const { status } = req.body;
+  
+    if (!['Pending', 'Verified', 'Rejected'].includes(status)) {
       return res.status(400).json({ message: 'Invalid status value' });
-  }
-
-  try {
+    }
+  
+    try {
       const updatedPayment = await Payment.findByIdAndUpdate(
-          paymentId,
-          { status },
-          { new: true }
+        paymentId,
+        { status },
+        { new: true }
       );
-
+  
       if (!updatedPayment) {
-          return res.status(404).json({ message: 'Payment not found' });
+        return res.status(404).json({ message: 'Payment not found' });
       }
-
+  
+      // ✅ If status is Verified, update related advertisement
+      if (status === 'Verified' && updatedPayment.adId) {
+        await Advertisement.findByIdAndUpdate(
+          updatedPayment.adId,
+          { paymentStatus: updatedPayment._id }
+        );
+      }
+  
       res.status(200).json({ message: 'Payment status updated successfully', updatedPayment });
-  } catch (error) {
+    } catch (error) {
       res.status(500).json({ message: 'Failed to update payment status', error: error.message });
-  }
-};
+    }
+  };
+  
+
 
 // Delete payment by admin
 export const deletePayment = async (req, res) => {

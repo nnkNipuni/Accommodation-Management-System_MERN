@@ -18,8 +18,29 @@ const Pending = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    fetchMyAdvertisements();
+    const fetchApprovedUnpaidAds = async () => {
+      try {
+        const res = await axios.get("http://localhost:5001/api/advertisements/approved-unpaid");
+        setApprovedAds(res.data);
+      } catch (error) {
+        console.error("Error fetching approved but unpaid ads:", error);
+      }
+    };
+    fetchApprovedUnpaidAds();
   }, []);
+  
+  const handleDelete = async (adId) => {
+    if (window.confirm("Are you sure you want to delete this advertisement?")) {
+      try {
+        await axios.delete(`http://localhost:5001/api/advertisements/${adId}`);
+        setApprovedAds(prev => prev.filter(ad => ad._id !== adId));
+      } catch (error) {
+        console.error("Error deleting advertisement:", error);
+        alert("Failed to delete advertisement.");
+      }
+    }
+  };
+  
 
   const fetchMyAdvertisements = async () => {
     try {
@@ -195,7 +216,7 @@ const Pending = () => {
                             </div>
                           </div>
 
-                          <div className="mt-4 flex items-center justify-between">
+                          {/* <div className="mt-4 flex items-center justify-between">
                             <div>
                               <p className="text-sm font-medium text-gray-900">LKR {ad.price.toLocaleString()}</p>
                               <p className="text-xs text-gray-500">per month</p>
@@ -206,9 +227,33 @@ const Pending = () => {
                             >
                               <BanknotesIcon className="-ml-0.5 mr-1.5 h-4 w-4" />
                               Make Payment
-                            </button>
+                            </button> */}
+                            <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+  <div>
+    <p className="text-sm font-medium text-gray-900">LKR {ad.price.toLocaleString()}</p>
+    <p className="text-xs text-gray-500">per month</p>
+  </div>
+  <div className="flex flex-col sm:flex-row gap-2">
+    <button
+      onClick={() => handlePayment(ad._id)}
+      className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
+    >
+      <BanknotesIcon className="-ml-0.5 mr-1.5 h-4 w-4" />
+      Make Payment
+    </button>
+
+    {(!ad.paymentStatus || ad.paymentStatus.status !== "Verified") && (
+      <button
+        onClick={() => handleDelete(ad._id)}
+        className="inline-flex items-center px-3 py-2 border border-red-600 text-red-600 text-sm rounded-md hover:bg-red-50"
+      >
+        Delete Ad
+      </button>
+    )}
+  </div>
+</div>
                           </div>
-                        </div>
+                        
                         {ad.images?.[0] && (
                           <img 
                             src={`http://localhost:5001/${ad.images[0]}`} 

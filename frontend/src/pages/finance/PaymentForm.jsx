@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import SubmissionModal from './SubmissionModal';
 import axios from 'axios';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 
 function PaymentForm() {
   const { adId } = useParams();
@@ -10,19 +11,14 @@ function PaymentForm() {
     paymentdate: '',
     proof: null,
   });
-  //newly added
+
   const [adDetails, setAdDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState({});
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
-  const navigate = useNavigate();
+  const [submitted, setSubmitted] = useState(false);
 
-  // For testing purposes, use a valid MongoDB ObjectId
-  // This should be replaced with actual user authentication
   const testUserId = '65f1a2b3c4d5e6f7a8b9c0d1';
-  
-  // Fetch ad details when component loads //newly added
+
   useEffect(() => {
     const fetchAdDetails = async () => {
       if (adId) {
@@ -40,7 +36,7 @@ function PaymentForm() {
         }
       }
     };
-    
+
     fetchAdDetails();
   }, [adId]);
 
@@ -63,10 +59,8 @@ function PaymentForm() {
     } else {
       const selectedDate = new Date(formData.paymentdate);
       const today = new Date();
-      const selected = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-      const now = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      if (selected > now) {
-        newErrors.paymentdate = 'Please select today or a date before today';
+      if (selectedDate > today) {
+        newErrors.paymentdate = 'Please select today or a past date';
       }
     }
     if (!formData.proof) {
@@ -78,117 +72,95 @@ function PaymentForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) return;
 
     const formDataToSend = new FormData();
-    formDataToSend.append('adId', adId); // Include the advertisement ID
+    formDataToSend.append('adId', adId);
     formDataToSend.append('amount', formData.amount);
     formDataToSend.append('paymentdate', formData.paymentdate);
     formDataToSend.append('proof', formData.proof);
     formDataToSend.append('userId', testUserId);
 
     try {
-      const response = await fetch("http://localhost:5001/api/payments/create", {
+      await fetch("http://localhost:5001/api/payments/create", {
         method: 'POST',
         body: formDataToSend,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setModalMessage('Payment submitted successfully!');
-        setFormData({ amount: '', paymentdate: '', proof: null });
-        setErrors({});
-      } else {
-        setModalMessage(data.message || 'Failed to submit payment. Please try again.');
-        if (data.error) {
-          console.error('Server error:', data.error);
-        }
-      }
-      setModalOpen(true);
+      setSubmitted(true);
+      setFormData({ amount: '', paymentdate: '', proof: null });
+      setErrors({});
     } catch (error) {
       console.error('Error submitting payment:', error);
-      setModalMessage('An error occurred. Please try again.');
-      setModalOpen(true);
     }
   };
 
-  const closeModal = () => {
-    setModalOpen(false);
-    if (modalMessage.includes('successfully')) {
-      navigate('/transactions');
-    }
-  };
-//newly added
   if (loading) {
-    return <div>Loading ad details...</div>;
+    return <div className="text-center py-10 text-gray-500">Loading ad details...</div>;
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <button className="mr-2 text-gray-600">←</button>
-          <h2 className="text-xl font-semibold">Payments</h2>
-        </div>
-        <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-      </div>
+    <div className="max-w-xl mx-auto mt-16 bg-white shadow-md rounded-lg p-6 border">
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">Submit Your Payment</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      {submitted && (
+        <div className="flex items-center bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded mb-6">
+          <CheckCircleIcon className="h-5 w-5 mr-2" />
+          Payment submitted successfully!
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Amount */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Payment Amount</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Payment Amount (LKR)</label>
           <input
             type="text"
             name="amount"
             value={formData.amount}
             onChange={handleChange}
             onInput={e => e.target.value = e.target.value.replace(/[^0-9.]/g, '')}
-            className={`mt-1 block w-full p-2 border ${errors.amount ? 'border-red-500' : 'border-gray-300'} rounded`}
+            className={`w-full px-4 py-2 border ${errors.amount ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
           />
-          {errors.amount && <p className="text-red-500 text-sm mt-1">Please enter a valid number greater than 0</p>}
+          {errors.amount && <p className="text-sm text-red-600 mt-1">{errors.amount}</p>}
         </div>
 
+        {/* Date */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Payment Date</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Payment Date</label>
           <input
             type="date"
             name="paymentdate"
             value={formData.paymentdate}
             onChange={handleChange}
             max={new Date().toISOString().split('T')[0]}
-            className={`mt-1 block w-full p-2 border ${errors.paymentdate ? 'border-red-500' : 'border-gray-300'} rounded`}
+            className={`w-full px-4 py-2 border ${errors.paymentdate ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
           />
-          {errors.paymentdate && <p className="text-red-500 text-sm mt-1">{errors.paymentdate}</p>}
+          {errors.paymentdate && <p className="text-sm text-red-600 mt-1">{errors.paymentdate}</p>}
         </div>
 
+        {/* Proof */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Payment Proof</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Payment Proof (PDF)</label>
           <input
             type="file"
             name="proof"
-            accept='.pdf'
+            accept=".pdf"
             onChange={handleChange}
-            className={`mt-1 block w-full p-2 border ${errors.proof ? 'border-red-500' : 'border-gray-300'} rounded`}
+            className={`w-full px-4 py-2 border ${errors.proof ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
           />
-          {errors.proof && <p className="text-red-500 text-sm mt-1">{errors.proof}</p>}
+          {errors.proof && <p className="text-sm text-red-600 mt-1">{errors.proof}</p>}
         </div>
 
+        {/* Submit */}
         <button
           type="submit"
-          className="w-full bg-black text-white py-2 px-4 rounded hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+          className="w-full bg-indigo-600 text-white py-2 rounded-md font-medium hover:bg-indigo-700 transition"
         >
           Submit Payment
         </button>
       </form>
-
-      <SubmissionModal
-        isOpen={modalOpen}
-        onClose={closeModal}
-        message={modalMessage}
-      />
     </div>
   );
 }
